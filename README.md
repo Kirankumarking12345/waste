@@ -1,26 +1,38 @@
 # waste
 
-/* add scale for the axes*/
-    char scale[5];
-    HPDF_Page_BeginText(page);
-    for(int i=0; i<270; i=i+30)
-    {
-        sprintf(scale,"%d",i);
-        HPDF_Page_TextOut(page, mov_rig+i, mov_up - 6, scale);
-        HPDF_Page_TextOut(page, mov_rig-13, mov_up + i, scale);
-    }
-    
+import bluetooth
+import io
+import time
+from PIL import Image
 
-    HPDF_Page_TextOut(page, 250,  450, "flux");
-    HPDF_Page_TextOut(page, 250,  430, "bp");
-    HPDF_Page_EndText(page);
+# Define the Bluetooth service UUID
+SERVICE_UUID = "00001101-0000-1000-8000-00805F9B34FB"
 
-    HPDF_Page_SetRGBStroke(page, 1, 0, 0);
-    HPDF_Page_MoveTo(page, 220, 453);
-    HPDF_Page_LineTo(page, 240, 453);
-    HPDF_Page_Stroke(page);
+# Create a Bluetooth socket
+client_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 
-    HPDF_Page_SetRGBStroke(page, 0, 0, 1);
-    HPDF_Page_MoveTo(page, 220, 433);
-    HPDF_Page_LineTo(page, 240, 433);
-    HPDF_Page_Stroke(page);
+# Connect to the Raspberry Pi
+client_sock.connect(("XX:XX:XX:XX:XX:XX", 1)) # Replace with the Raspberry Pi Bluetooth MAC address
+
+try:
+    # Receive the camera image data
+    stream = io.BytesIO()
+    while True:
+        data = client_sock.recv(1024)
+        if not data:
+            break
+        stream.write(data)
+
+    # Convert the image data to a PIL image
+    stream.seek(0)
+    image = Image.open(stream)
+
+    # Display the image
+    image.show()
+
+except Exception as e:
+    print(e)
+
+finally:
+   
+
