@@ -1,0 +1,42 @@
+import bluetooth
+import io
+from PIL import Image
+
+# Create a Bluetooth socket
+server_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+
+# Bind the socket to a port
+server_socket.bind(("", 1))
+
+# Listen for incoming connections
+server_socket.listen(1)
+
+try:
+    # Accept the connection from the Raspberry Pi
+    client_socket, address = server_socket.accept()
+
+    # Create a stream object for receiving data
+    stream = io.BytesIO()
+
+    # Receive the image data
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
+        stream.write(data)
+
+    # Convert the stream content to an image
+    stream.seek(0)
+    image = Image.open(stream)
+
+    # Save the received image
+    image.save("received_image.jpg")
+
+except Exception as e:
+    # Handle any exceptions
+    print(e)
+
+finally:
+    # Close the sockets
+    client_socket.close()
+    server_socket.close()
